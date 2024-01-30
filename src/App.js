@@ -1,9 +1,9 @@
-import { Auth } from "./components/auth";
+import {Auth} from './components/auth'
 
 function App() {
   return (
     <div className="App">
-      <Auth />
+      <Auth/>
     </div>
   );
 }

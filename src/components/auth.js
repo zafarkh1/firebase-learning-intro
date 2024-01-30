@@ -1,29 +1,50 @@
-import { useState } from "react";
-import { auth, googleProveider } from "../config/firebase";
+import { useState, useEffect } from "react";
+import { auth, googleProvider } from "../config/firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
 } from "firebase/auth";
 
 export const Auth = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
 
-  console.log(auth?.currentUser?.email);
-  const signInEmail = async () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleSignInEmail = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, signInEmail, signInPassword);
     } catch (error) {
-      console.error(error);
+      console.error(error.message);
     }
   };
 
-  const signInGoogle = async () => {
+  const handleSignUpEmail = async () => {
     try {
-      await signInWithPopup(auth, googleProveider);
+      await signInWithEmailAndPassword(auth, signUpEmail, signUpPassword);
     } catch (error) {
-      console.error(error);
+      console.error(error.message);
+    }
+  };
+
+  const handleSignInGoogle = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error(error.message);
     }
   };
 
@@ -31,27 +52,50 @@ export const Auth = () => {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error(error);
+      console.error(error.message);
     }
   };
 
   return (
     <>
-      <input
-        type="text"
-        placeholder="Email..."
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password..."
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={signInEmail}>Sign in</button>
-      <button onClick={signInGoogle}>Google</button>
-      <button onClick={logOut}>Log out</button>
+      <div className="signIn">
+        <h1>Sign in</h1>
+        <input
+          type="text"
+          placeholder="Email..."
+          value={signInEmail}
+          onChange={(e) => setSignInEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password..."
+          value={signInPassword}
+          onChange={(e) => setSignInPassword(e.target.value)}
+        />
+        <button onClick={handleSignInEmail}>Sign in</button>
+        <button onClick={handleSignInGoogle}>Google</button>
+      </div>
+      <div className="signUp">
+        <h1>Sign up</h1>
+        <input
+          type="text"
+          placeholder="Email..."
+          value={signUpEmail}
+          onChange={(e) => setSignUpEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password..."
+          value={signUpPassword}
+          onChange={(e) => setSignUpPassword(e.target.value)}
+        />
+        <button onClick={handleSignUpEmail}>Sign up</button>
+      </div>
+      <div className="logOut">
+        <h2>Logged {user ? "in" : "out"}</h2>
+        {user && <p>Email: {user.email}</p>}
+        <button onClick={logOut}>Log out</button>
+      </div>
     </>
   );
 };
